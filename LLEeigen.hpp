@@ -1,10 +1,11 @@
 #include <eigen3/Eigen/Dense>
-// #ifdef _MDS_WITH_REDSVD
-// #include <redsvd/redsvd.hpp>
-// #else
 #include <eigen3/Eigen/SVD>
 #include <eigen3/Eigen/LU>
-// #endif
+#ifdef _SPRARCE
+#include <eigen3/Eigen/Sparse>
+#include <redsvd/redsvd.hpp>
+#endif
+
 using namespace Eigen;
 
 #define DBL_MAX (100000)
@@ -58,22 +59,16 @@ void lle_eigen(MatrixXf & dist,MatrixXf & data,MatrixXf & out,
   sm+= MatrixXf::Identity(sm.rows(),sm.cols());
 
   sm = sm.transpose()*sm;
+#ifdef _SPRARSE
 
+#else
   SelfAdjointEigenSolver<MatrixXf> eigensolver(sm);
-
   MatrixXf evecs=eigensolver.eigenvectors();
-  for (int r = 0;r < out.rows();r++)
-    for (int c = 0;c < out.cols();c++){
-      //     out(r, c) = evecs(r,c);
-     out(r, c) = evecs(r, evecs.cols() - c - 2);
-    }
+#endif
 
-  //  EigenSolver<MatrixXf> eigensolver(sm);
-  //sorted (maybe)
-  //  MatrixXcf evecs=eigensolver.eigenvectors();
-  //  for (int r = 0;r < out.rows();r++)
-  //    for (int c = 0;c < out.cols();c++)
-  //      out(r, c) = evecs(r, evecs.cols() - c - 2).real();
+  for (int r = 0;r < out.rows();r++)
+    for (int c = 0;c < out.cols();c++)
+      out(r, c) = evecs(r, evecs.cols() - c - 2);
 
   return;
 }
